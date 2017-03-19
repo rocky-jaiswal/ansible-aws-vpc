@@ -70,6 +70,8 @@ Also, create S3 bucket e.g. k8-new-14mar17
 
 ```./kube-aws status```
 
+__You may have to manually create the K8 DNS endpoint in Route53 here__
+
 ```kubectl --kubeconfig=./kubeconfig get nodes```
 
 ## Create the Docker Registry connection
