@@ -1,4 +1,4 @@
-#What we want?
+# What we want?
 
 - Git (Gitlab?)
 - CI
@@ -26,19 +26,7 @@
 
 ```aws kms --region="eu-central-1" create-key --description="kube-aws k8-cluster-14Mar2017"```
 
-{
-    "KeyMetadata": {
-        "Arn": "arn:aws:kms:eu-central-1:313081410347:key/10c1b5dd-8252-427d-bf1d-70eaf0a7cadf",
-        "KeyState": "Enabled",
-        "KeyId": "10c1b5dd-8252-427d-bf1d-70eaf0a7cadf",
-        "Description": "kube-aws k8-cluster-14Mar2017",
-        "Origin": "AWS_KMS",
-        "KeyUsage": "ENCRYPT_DECRYPT",
-        "AWSAccountId": "313081410347",
-        "Enabled": true,
-        "CreationDate": 1489490721.294
-    }
-}
+Copy the key ARN safely
 
 ## Step 2
 
@@ -48,9 +36,11 @@
 --region=eu-central-1 \
 --availability-zone=eu-central-1a \
 --key-name=rocky-app-sandbox-key \
---kms-key-arn="arn:aws:kms:eu-central-1:750324395434:key/6edaa794-069b-43ae-98dd-a3cf485670fd"```
+--kms-key-arn="copy-key-arn-here"```
 
 Edit cluster.yaml and fix the VPC values (workers and nodes in private subnet and controller in public subnet)
+
+Sample with 2 Subnets is in repo.
 
 Also, create S3 bucket e.g. k8-new-14mar17
 

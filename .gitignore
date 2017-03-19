@@ -1,2 +1,4 @@
 vars.yml
 **/*.pem
+/kube_setup/kube-aws
+/kube_setup/kubeconfig
