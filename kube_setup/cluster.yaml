@@ -1,0 +1,50 @@
+clusterName: k8-cluster-rockyj-de
+
+externalDNSName: k8.rockyj.de
+
+keyName: rocky-app-sandbox-key
+
+region: eu-central-1
+
+kmsKeyArn: "arn:aws:kms:eu-central-1:750324395434:key/6edaa794-069b-43ae-98dd-a3cf485670fd"
+
+controller:
+  subnets:
+    - name: Pub1
+  loadBalancer:
+    private: false
+
+worker:
+  nodePools:
+    - name: nodepool1
+      count: 2
+      subnets:
+        - name: Priv1
+
+etcd:
+  subnets:
+    - name: Priv1
+
+vpcId: vpc-e216a88a
+
+internetGatewayId: igw-71fec018
+
+subnets:
+  - name: Priv1
+    id: subnet-c2f188aa
+    private: true
+    availabilityZone: eu-central-1a
+    instanceCIDR: "10.0.2.0/24"
+    routeTable:
+      id: rtb-1e5c3276
+
+  - name: Pub1
+    id: subnet-c1f188a9
+    private: false
+    availabilityZone: eu-central-1a
+    instanceCIDR: "10.0.1.0/24"
+    routeTable:
+      id: rtb-1d5c3275
+
+tlsCADurationDays: 3650
+tlsCertDurationDays: 3650
