@@ -31,7 +31,7 @@ Copy the key ARN safely
 ## Step 2
 
 
-```./kube-aws init --cluster-name=k8-cluster-v4 --external-dns-name=k8.app-sandbox.de --region=eu-central-1 --key-name=rocky-app-sandbox-key --kms-key-arn="copy-key-arn-here"```
+```./kube-aws init --cluster-name=k8-cluster-v4 --external-dns-name=k8.app-sandbox.de --region=eu-central-1 --availability-zone=eu-central-1a --key-name=rocky-app-sandbox-key --kms-key-arn="copy-key-arn-here"```
 
 Edit cluster.yaml and fix the VPC values (workers and nodes in private subnet and controller in public subnet)
 

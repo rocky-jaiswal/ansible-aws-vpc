@@ -2,3 +2,7 @@ vars.yml
 **/*.pem
 /kube_setup/kube-aws
 /kube_setup/kubeconfig
+/kube_setup/credentials
+/kube_setup/userdata
+/kube_setup/stack-templates
+
