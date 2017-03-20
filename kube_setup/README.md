@@ -63,7 +63,7 @@ __You may have to manually create the K8 DNS endpoint in Route53 here__ Check th
 
 ## Create the Docker Registry connection
 
-```kubectl --kubeconfig=./kubeconfig create secret docker-registry b2b-registry --docker-server=b2b-registry.tedd.berlin:5000 --docker-username=kubernetes --docker-password='2Rt%v_tGf$r§99$&(uZghT6' --docker-email='rocky.jaiswal@tedd.berlin'```
+```kubectl --kubeconfig=./kubeconfig create secret docker-registry b2b-registry --docker-server=b2b-registry.example.com:5000 --docker-username=kubernetes --docker-password='foo' --docker-email='rocky.jaiswal@example.com'```
 
 ## Create secrets
 
