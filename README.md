@@ -8,4 +8,7 @@
 
 Uses [http://docs.ansible.com/ansible/list_of_cloud_modules.html](http://docs.ansible.com/ansible/list_of_cloud_modules.html)
 
+
+## See kube_setup sub-directory for setting up K8 on this VPC
+
 Enjoy!!
