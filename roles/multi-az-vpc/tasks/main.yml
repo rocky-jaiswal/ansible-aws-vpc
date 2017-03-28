@@ -1,0 +1,213 @@
+---
+
+# roles/vpc/tasks/main.yml
+
+
+# First task : creating the VPC.
+# We are using the variables set in the vars.yml file.
+# The module gives us back its result,
+# which contains information about our new VPC.
+# We register it in the variable my_vpc.
+
+- name:               Create VPC
+  ec2_vpc_net:
+    name:             "{{ vpc_name }}"
+    cidr_block:       "{{ vpc_cidr_block }}"
+    region:           "{{ aws_region }}"
+    aws_access_key:   "{{ aws_access_key }}"
+    aws_secret_key:   "{{ aws_secret_key }}"
+    state:            "present"
+  register: my_vpc
+
+- name:               Set VPC ID in variable
+  set_fact:
+    vpc_id:           "{{ my_vpc.vpc.id }}"
+
+# Now let's create the subnets.
+# Two for AZ1, two for AZ2.
+# For each AZ : one public, one private.
+# Again, we save their ids in variables.
+
+- name:               Create Public Subnet [AZ-1]
+  ec2_vpc_subnet:
+    state:            "present"
+    vpc_id:           "{{ vpc_id }}"
+    cidr:             "10.0.1.0/24"
+    az:               "{{ aws_region }}a"
+    region:           "{{ aws_region }}"
+    aws_access_key:   "{{ aws_access_key }}"
+    aws_secret_key:   "{{ aws_secret_key }}"
+    resource_tags:
+      Name:           "Public Subnet 1"
+  register: my_public_subnet_az1
+
+- name:               Set Public Subnet ID in variable [AZ-1]
+  set_fact:
+    public_subnet_az1_id: "{{ my_public_subnet_az1.subnet.id }}"
+
+- name:               Create Private Subnet [AZ-1]
+  ec2_vpc_subnet:
+    state:            "present"
+    vpc_id:           "{{ vpc_id }}"
+    cidr:             "10.0.2.0/24"
+    az:               "{{ aws_region }}a"
+    region:           "{{ aws_region }}"
+    aws_access_key:   "{{ aws_access_key }}"
+    aws_secret_key:   "{{ aws_secret_key }}"
+    resource_tags:
+      Name:           "Private Subnet 1"
+  register: my_private_subnet_az1
+
+- name:               Set Private Subnet ID in variable [AZ-1]
+  set_fact:
+    private_subnet_az1_id: "{{ my_private_subnet_az1.subnet.id }}"
+
+- name:               Create Public Subnet [AZ-2]
+  ec2_vpc_subnet:
+    state:            "present"
+    vpc_id:           "{{ vpc_id }}"
+    cidr:             "10.0.11.0/24"
+    az:               "{{ aws_region }}b"
+    region:           "{{ aws_region }}"
+    aws_access_key:   "{{ aws_access_key }}"
+    aws_secret_key:   "{{ aws_secret_key }}"
+    resource_tags:
+      Name:           "Public Subnet 2"
+  register: my_public_subnet_az2
+
+- name:               Set Public Subnet ID in variable [AZ-2]
+  set_fact:
+    public_subnet_az2_id: "{{ my_public_subnet_az2.subnet.id }}"
+
+- name:               Create Private Subnet [AZ-2]
+  ec2_vpc_subnet:
+    state:            "present"
+    vpc_id:           "{{ vpc_id }}"
+    cidr:             "10.0.12.0/24"
+    az:               "{{ aws_region }}b"
+    region:           "{{ aws_region }}"
+    aws_access_key:   "{{ aws_access_key }}"
+    aws_secret_key:   "{{ aws_secret_key }}"
+    resource_tags:
+      Name:           "Private Subnet 2"
+  register: my_private_subnet_az2
+
+- name:               Set Private Subnet ID in variable [AZ-2]
+  set_fact:
+    private_subnet_az2_id: "{{ my_private_subnet_az2.subnet.id }}"
+
+
+# Every VPC needs at least one Internet Gateway.
+# This component allows traffic between the VPC and the outside world.
+- name:               Create Internet Gateway for VPC
+  ec2_vpc_igw:
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    aws_access_key:   "{{ aws_access_key }}"
+    aws_secret_key:   "{{ aws_secret_key }}"
+    state:            "present"
+  register: my_vpc_igw
+
+- name:               Set Internet Gateway ID in variable
+  set_fact:
+    igw_id:           "{{ my_vpc_igw.gateway_id }}"
+
+# Create 2 NAT GWs for private subnets to connect to the internet
+- name: Create new nat gateway and allocate new EIP.
+  ec2_vpc_nat_gateway:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ aws_region }}"
+    state: present
+    subnet_id: "{{ public_subnet_az1_id }}"
+    wait: yes
+  register: my_nat_gateway
+
+- name: Set Nat Gateway ID in variable
+  set_fact:
+    nat_gateway_az1_id: "{{ my_nat_gateway.nat_gateway_id }}"
+
+# Setup the routing Tables
+# public subnets connect via igw_id
+# private subnets via the NAT GW in their AZ
+
+- name: Set up public subnet route table
+  ec2_vpc_route_table:
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ aws_region }}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    tags:
+      Name: "Public"
+    subnets:
+      - "{{ public_subnet_az1_id }}"
+      - "{{ public_subnet_az2_id }}"
+    routes:
+      - dest: "0.0.0.0/0"
+        gateway_id: "{{ igw_id }}"
+
+- name: Set up private subnet route table [AZ-1]
+  ec2_vpc_route_table:
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ aws_region }}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    tags:
+      Name: "Private 1"
+    subnets:
+      - "{{ private_subnet_az1_id }}"
+    routes:
+      - dest: "0.0.0.0/0"
+        gateway_id: "{{ nat_gateway_az1_id }}"
+
+- name: Set up private subnet route table [AZ-2]
+  ec2_vpc_route_table:
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ aws_region }}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    tags:
+      Name: "Private 2"
+    subnets:
+      - "{{ private_subnet_az2_id }}"
+    routes:
+      - dest: "0.0.0.0/0"
+        gateway_id: "{{ nat_gateway_az1_id }}"
+
+
+# Finally, let's create the Security Groups.
+# We will create two : one to attach to public instances,
+# and one to attach to private instances.
+
+- name: Create Main Security Group
+  ec2_group:
+    name: "External SSH Access"
+    description: "External SSH Access"
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ aws_region }}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    rules:
+      - proto: "tcp"
+        from_port: "22"
+        to_port: "22"
+        cidr_ip: "0.0.0.0/0"
+  register: my_main_sg
+
+- name: Set Main SG ID
+  set_fact:
+    main_sg_id: "{{ my_main_sg.group_id }}"
+
+- name: Create Private Security Group
+  ec2_group:
+    name: "Private Instances SG"
+    description: "Private Instances SG"
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ aws_region }}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    rules:
+      - proto: "tcp"
+        from_port: "22"
+        to_port: "22"
+        group_id: "{{ main_sg_id }}"
