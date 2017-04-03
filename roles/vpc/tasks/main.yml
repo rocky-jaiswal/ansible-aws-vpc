@@ -17,6 +17,8 @@
     aws_access_key:   "{{ aws_access_key }}"
     aws_secret_key:   "{{ aws_secret_key }}"
     state:            "present"
+    tags:
+      KubernetesCluster: "{{ k8_cluster_name }}"
   register: my_vpc
 
 - name:               Set VPC ID in variable
@@ -40,6 +42,7 @@
     aws_secret_key:   "{{ aws_secret_key }}"
     resource_tags:
       Name:           "Public Subnet"
+      KubernetesCluster: "{{ k8_cluster_name }}"
   register: my_public_subnet
 
 - name:               Set Public Subnet ID in variable
@@ -57,6 +60,7 @@
     aws_secret_key:   "{{ aws_secret_key }}"
     resource_tags:
       Name:           "Private Subnet"
+      KubernetesCluster: "{{ k8_cluster_name }}"
   register: my_private_subnet
 
 - name:               Set Private Subnet ID in variable
@@ -106,6 +110,7 @@
     aws_secret_key: "{{ aws_secret_key }}"
     tags:
       Name: "Public"
+      KubernetesCluster: "{{ k8_cluster_name }}"
     subnets:
       - "{{ public_subnet_id }}"
     routes:
@@ -120,6 +125,7 @@
     aws_secret_key: "{{ aws_secret_key }}"
     tags:
       Name: "Private"
+      KubernetesCluster: "{{ k8_cluster_name }}"
     subnets:
       - "{{ private_subnet_id }}"
     routes:
